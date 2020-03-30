@@ -1,0 +1,304 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>WorkingDijktra_withPath</title><meta name="generator" content="MATLAB 9.5"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2020-03-30"><meta name="DC.source" content="WorkingDijktra_withPath.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><pre class="codeinput"><span class="comment">% Dijkstra algorithm</span>
+
+<span class="comment">% Caleb Kennett</span>
+
+<span class="comment">% input is weight matrix with rows as nodes</span>
+<span class="comment">% and column as connecting node</span>
+
+<span class="comment">% output is shortest distances to final node from start node</span>
+<span class="comment">% and the previous node that lead to that distance.</span>
+
+
+
+
+
+
+n = 13; <span class="comment">% matrix of weights should then be n by n</span>
+
+
+w_actual =[0 5 8 1 999 999 999 999 999 999 999 999 999;
+           5 0 4 999 2 11 2 999 999 999 999 999 999;
+           8 4 0 6 999 3 10 1 999 999 999 999 999;
+           1 999 6 0 999 999 9 2 5 999 999 999 999;
+           999 2 999 999 0 10 999 999 999 6 999 999 999;
+           999  11 3 999 10 0 4 999 999 3 9 999 999;
+           999 2 10 9 999 4 0 11 999 5 22 10 999;
+           999 999 1 2 999 999 11 0 7 999 7 8 999;
+           999 999 999 5 999 999 999 7 0 999 999 1 999;
+           999 999 999 999 6 3 5 999 999 0 8 999 2;
+           999 999 999 999 999 9 22 7 999 8 0 11 5;
+           999 999 999 999 999 999 10 8 1 999 11 0 23;
+           999 999 999 999 999 999 999 999 999 2 5 23 0];
+w_actual( w_actual == 999) = Inf;  <span class="comment">% 999 set to Inf</span>
+
+w= w_actual;
+w(w==0)=Inf;
+
+
+vertex = n;
+source = 1;
+destination = 13;
+
+
+prev = ones(1,vertex);
+
+visted = zeros(1,n);
+<span class="comment">% 0/1 binary variable indicating whether</span>
+<span class="comment">%           the node has been visited.</span>
+
+dist = w(1,:);<span class="comment">% the distance from node 1.</span>
+dist(source) = 0;
+
+<span class="comment">%%%%%%%%%%</span>
+
+u =1;
+
+<span class="keyword">while</span> visted(destination) ~= 1
+
+    <span class="comment">%Find the unvisited node with the lowest distance.</span>
+    <span class="comment">% Set it as current node and mark it as visited</span>
+    <span class="keyword">if</span> visted(u) ~= 1 <span class="comment">% if unvisted</span>
+
+        [~,lowest_dist_node]= min(w(u,2:n));
+        visted(u) = 1; <span class="comment">% mark as visted</span>
+
+    <span class="keyword">else</span>
+
+        VISTED = visted*999 + 1;
+
+        weight = VISTED.*w(u,:);<span class="comment">% mask</span>
+
+        [~,lowest_dist_node]= min(weight(2:n));
+        visted(u) = 1; <span class="comment">% mark as visted</span>
+
+    <span class="keyword">end</span>
+    u = lowest_dist_node+1;
+    <span class="comment">%%%%%%</span>
+
+    <span class="keyword">for</span> v = 1:vertex
+        <span class="keyword">if</span> w(u,v) ~= Inf <span class="comment">% find all links that join to that current node.</span>
+            alt = dist(u) + w(u,v) ; <span class="comment">%  dist from source to u</span>
+                                     <span class="comment">% + length from u to v</span>
+            <span class="keyword">if</span> alt &lt; dist(v)  <span class="comment">%If this is less than the stored distance</span>
+
+                dist(v) = alt;<span class="comment">% update the distance.</span>
+                prev(v) = u;
+
+            <span class="keyword">end</span>
+
+        <span class="keyword">end</span>
+    <span class="keyword">end</span>
+
+
+<span class="keyword">end</span>
+
+all_nodes = [1:13];
+output=[all_nodes;dist;prev;visted]
+
+shortest_path = [];
+current = destination;
+
+<span class="keyword">while</span> current ~= source
+
+    shortest_path = cat(2,current, shortest_path);
+
+    current = prev(current );
+
+<span class="keyword">end</span>
+
+shortest_path = cat(2,source,shortest_path) <span class="comment">% shortest path</span>
+</pre><pre class="codeoutput">
+output =
+
+     1     2     3     4     5     6     7     8     9    10    11    12    13
+     0     5     4     1     7     7     7     3     6    10    10     7    12
+     1     1     8     1     2     3     2     4     4     6     8     9    10
+     1     1     1     1     1     1     1     1     1     0     1     1     1
+
+
+shortest_path =
+
+     1     4     8     3     6    10    13
+
+</pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2018b</a><br></p></div><!--
+##### SOURCE BEGIN #####
+% Dijkstra algorithm
+
+% Caleb Kennett
+
+% input is weight matrix with rows as nodes
+% and column as connecting node
+
+% output is shortest distances to final node from start node
+% and the previous node that lead to that distance.
+
+
+
+
+
+
+n = 13; % matrix of weights should then be n by n
+
+
+w_actual =[0 5 8 1 999 999 999 999 999 999 999 999 999;
+           5 0 4 999 2 11 2 999 999 999 999 999 999;
+           8 4 0 6 999 3 10 1 999 999 999 999 999;
+           1 999 6 0 999 999 9 2 5 999 999 999 999;
+           999 2 999 999 0 10 999 999 999 6 999 999 999;
+           999  11 3 999 10 0 4 999 999 3 9 999 999;
+           999 2 10 9 999 4 0 11 999 5 22 10 999;
+           999 999 1 2 999 999 11 0 7 999 7 8 999;
+           999 999 999 5 999 999 999 7 0 999 999 1 999;
+           999 999 999 999 6 3 5 999 999 0 8 999 2;
+           999 999 999 999 999 9 22 7 999 8 0 11 5;
+           999 999 999 999 999 999 10 8 1 999 11 0 23;
+           999 999 999 999 999 999 999 999 999 2 5 23 0];
+w_actual( w_actual == 999) = Inf;  % 999 set to Inf
+
+w= w_actual;
+w(w==0)=Inf;
+
+
+vertex = n;
+source = 1;
+destination = 13;
+
+
+prev = ones(1,vertex);
+
+visted = zeros(1,n);
+% 0/1 binary variable indicating whether 
+%           the node has been visited.
+
+dist = w(1,:);% the distance from node 1. 
+dist(source) = 0;
+
+%%%%%%%%%%
+
+u =1;
+
+while visted(destination) ~= 1   
+    
+    %Find the unvisited node with the lowest distance. 
+    % Set it as current node and mark it as visited
+    if visted(u) ~= 1 % if unvisted
+        
+        [~,lowest_dist_node]= min(w(u,2:n));
+        visted(u) = 1; % mark as visted
+
+    else
+        
+        VISTED = visted*999 + 1;
+        
+        weight = VISTED.*w(u,:);% mask
+        
+        [~,lowest_dist_node]= min(weight(2:n));
+        visted(u) = 1; % mark as visted
+   
+    end   
+    u = lowest_dist_node+1;
+    %%%%%%
+      
+    for v = 1:vertex
+        if w(u,v) ~= Inf % find all links that join to that current node.
+            alt = dist(u) + w(u,v) ; %  dist from source to u
+                                     % + length from u to v
+            if alt < dist(v)  %If this is less than the stored distance
+                
+                dist(v) = alt;% update the distance.
+                prev(v) = u;
+                
+            end
+
+        end
+    end
+          
+
+end
+
+all_nodes = [1:13];
+output=[all_nodes;dist;prev;visted]
+
+shortest_path = [];
+current = destination;
+
+while current ~= source 
+    
+    shortest_path = cat(2,current, shortest_path);
+    
+    current = prev(current );
+
+end
+
+shortest_path = cat(2,source,shortest_path) % shortest path
+
+##### SOURCE END #####
+--></body></html>
