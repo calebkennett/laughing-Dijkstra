@@ -92,12 +92,13 @@ while visted(destination) ~= 1
 
 end
 
-output=[1,2,3,4,5,6,7,8,9,10,11,12,13;dist;prev;visted]
+all_nodes = [1:13];
+output=[all_nodes;dist;prev;visted]
 
 shortest_path = [];
 current = destination;
 
-while current ~= source %~isempty(current) %current ~= None
+while current ~= source 
     
     shortest_path = cat(2,current, shortest_path);
     
@@ -105,4 +106,4 @@ while current ~= source %~isempty(current) %current ~= None
 
 end
 
-shortest_path = cat(2,source,shortest_path) % source value is assumed
+shortest_path = cat(2,source,shortest_path) % shortest path
